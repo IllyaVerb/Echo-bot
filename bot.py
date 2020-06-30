@@ -1,5 +1,11 @@
+import logging
 import config, os
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
