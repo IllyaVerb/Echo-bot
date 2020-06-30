@@ -1,4 +1,5 @@
 import config
+import os
 import telebot
 
 bot = telebot.TeleBot(config.token)
@@ -12,5 +13,6 @@ def repeat_all_messages(message):
     bot.send_message(message.chat.id, message.text)
 
 if __name__ == '__main__':
+    port = os.getenv('PORT', default=8000)
     bot.remove_webhook()
     bot.polling()
