@@ -12,4 +12,5 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
 
 if __name__ == '__main__':
+    bot.remove_webhook()
     bot.polling()
