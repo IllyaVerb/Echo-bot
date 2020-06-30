@@ -19,7 +19,7 @@ dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
-updater.start_webhook(listen="127.0.0.1",
+updater.start_webhook(listen="0.0.0.0",
                       port=int(os.environ.get('PORT', '8443')),
                       url_path=config.token)
 updater.bot.set_webhook("https://testbot2202.herokuapp.com/" + config.token)
