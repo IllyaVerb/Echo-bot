@@ -7,13 +7,13 @@ bot = telebot.TeleBot(config.token)
 
 server = Flask(__name__)
 
-@bot.message_handler(content_types=["text"])
-def repeat_all_messages(message):
-    bot.send_message(message.chat.id, message.text)
-
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
+    
+@bot.message_handler(content_types=["text"])
+def repeat_all_messages(message):
+    bot.send_message(message.chat.id, message.text)
 
 @server.route('/' + config.token, methods=['POST'])
 def getMessage():
