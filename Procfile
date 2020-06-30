@@ -1,1 +1,1 @@
-web: python bot.py
+web: gunicorn run_server:server
