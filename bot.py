@@ -62,15 +62,18 @@ def parse(url, context, chat_id):
 
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hi, I'm a bot and my name is Aia!\nI can make PDF file with notes, from 'musescore.com'. Just send me link on it.\nHave a nice day!")
 
 
 def musescore(update, context):
     url = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf. Wait a minute.")
+
     path = parse(url, context, update.effective_chat.id)
+
     context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your notes" + u'\U0001F3BC' + '.')
     context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
+
     if os.path.exists(path):
         os.remove(path)
     
