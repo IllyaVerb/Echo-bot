@@ -71,6 +71,8 @@ def musescore(update, context):
     path = parse(url, context, update.effective_chat.id)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your notes" + u'\U0001F3BC' + '.')
     context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
+    if os.path.exists(path):
+        os.remove(path)
     
 
 def echo(update, context):
