@@ -16,7 +16,7 @@ def cut_string(s, start, end):
 	return ''.join(list(s)[start:end])
 
 
-def parse(url):
+def parse(url, chat_id):
     path = 'musicscore_tmp_img_src/'
     svg_arr = []
     png_arr = []
@@ -34,6 +34,8 @@ def parse(url):
         if re.findall('\d{3}', str(req.get(code + str(i) + '.png')))[0] == '200':
             png_arr.append(str(i))
 
+    context.bot.send_message(chat_id=chat_id, text="I me!")
+
     if len(svg_arr) > len(png_arr):
         for i in svg_arr:
             urllib.request.urlretrieve(code + i + '.svg', path + i + '_img.svg')
@@ -46,6 +48,8 @@ def parse(url):
             with open(path + i + "_pdf.pdf", "wb") as f:
                 f.write(img2pdf.convert(path + i + '_img.png'))
             pdf_arr.append(path + i + "_pdf.pdf")
+
+    context.bot.send_message(chat_id=chat_id, text="I'!")
 
     merger = PdfFileMerger()
 
@@ -66,7 +70,7 @@ def start(update, context):
 def musescore(update, context):
     url = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf")
-    path = parse(url)
+    path = parse(url, update.effective_chat.id)
     context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'), text="Here is your notes")
     
 
