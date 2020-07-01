@@ -27,7 +27,7 @@ def parse(url, context, chat_id):
     first_get = req.get(url)
     code = re.findall('https:\/\/musescore.com\/static\/musescore\/scoredata\/gen\/\d\/\d\/\d\/\d+\/\S{40}\/score_',
                         str(first_get.content))[0]
-    name = cut_string(re.findall('title\" content=\"[\w\s()]+\"', str(first_get.content))[0], 16, -1)
+    name = cut_string(re.findall('title\" content=\".+\">\n<meta', str(first_get.content))[0], 16, -8)
     if not os.path.exists(path):
         os.makedirs(path)
     for i in range(50):        
