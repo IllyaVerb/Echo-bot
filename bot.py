@@ -27,7 +27,9 @@ def parse(url, context, chat_id):
     first_get = req.get(url)
     code = re.findall('https:\/\/musescore.com\/static\/musescore\/scoredata\/gen\/\d\/\d\/\d\/\d+\/\S{40}\/score_',
                         str(first_get.content))[0]
-    name = cut_string(re.findall('title\" content=\".+\">\n<meta', str(first_get.content))[0], 16, -8)
+    name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
+                  cut_string(re.findall(r'title\" content=\".+\">\\n<meta property=\"og:url\"', str(first_get.content))[0], 16, -27))
+    
     if not os.path.exists(path):
         os.makedirs(path)
     for i in range(50):        
@@ -86,7 +88,7 @@ updater = Updater(token=config.token, use_context=True)
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/user\/\d+\/scores\/\d+', musescore))
+dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', musescore))
 
 #dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
