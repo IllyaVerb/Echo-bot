@@ -23,7 +23,7 @@ dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/user\/\d+\/scores\/\d+', musescore))
 
-dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
+#dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
 updater.start_webhook(listen="0.0.0.0",
                       port=int(os.environ.get('PORT', '8443')),
