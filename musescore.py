@@ -1,5 +1,6 @@
 import requests as req
 import os, shutil, re
+import urllib.request
 
 from svglib.svglib import svg2rlg
 import img2pdf
@@ -9,15 +10,6 @@ from PyPDF2 import PdfFileMerger
 
 def cut_string(s, start, end):
 	return ''.join(list(s)[start:end])
-
-
-def download_file(url, name):
-    local_filename = name
-    with req.get(url, stream=True) as r:
-        with open(local_filename, 'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-
-    return local_filename
 
 
 def parse(url):
@@ -40,13 +32,13 @@ def parse(url):
 
     if len(svg_arr) > len(png_arr):
         for i in svg_arr:
-            download_file(code + i + '.svg', path + i + '_img.svg')
+            urllib.request.urlretrieve(code + i + '.svg', path + i + '_img.svg')
             drawing = svg2rlg(path + i + '_img.svg')
             renderPDF.drawToFile(drawing, path + i + "_pdf.pdf")
             pdf_arr.append(path + i + "_pdf.pdf")
     else:
         for i in png_arr:
-            download_file(code + i + '.png', path + i + '_img.png')
+            urllib.request.urlretrieve(code + i + '.png', path + i + '_img.png')
             with open(path + i + "_pdf.pdf", "wb") as f:
                 f.write(img2pdf.convert(path + i + '_img.png'))
             pdf_arr.append(path + i + "_pdf.pdf")
