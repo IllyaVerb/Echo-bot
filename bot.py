@@ -1,16 +1,28 @@
 import config, os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, RegexHandler, Filters
+
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
 
+
+def musescore(update, context):
+    url = update.message.text
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf")
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Here is your notes")    
+
+
 def echo(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+
 
 updater = Updater(token=config.token, use_context=True)
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
+dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/user\/\d+\/scores\/\d+', musescore))
+
 dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
 updater.start_webhook(listen="0.0.0.0",
