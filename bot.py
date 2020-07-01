@@ -67,9 +67,10 @@ def start(update, context):
 
 def musescore(update, context):
     url = update.message.text
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf. Wait a minute.")
     path = parse(url, context, update.effective_chat.id)
-    context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'), text="Here is your notes")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your notes" + u'\U0001F3BC' + '.')
+    context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
     
 
 def echo(update, context):
