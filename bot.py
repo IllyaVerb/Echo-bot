@@ -11,12 +11,14 @@ import img2pdf
 from reportlab.graphics import renderPDF
 from PyPDF2 import PdfFileMerger
 
+DEBUG = False
+
 
 def cut_string(s, start, end):
 	return ''.join(list(s)[start:end])
 
 
-def parse(url, chat_id):
+def parse(url, context, chat_id):
     path = 'musicscore_tmp_img_src/'
     svg_arr = []
     png_arr = []
@@ -70,7 +72,7 @@ def start(update, context):
 def musescore(update, context):
     url = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf")
-    path = parse(url, update.effective_chat.id)
+    path = parse(url, context, update.effective_chat.id)
     context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'), text="Here is your notes")
     
 
@@ -86,11 +88,14 @@ dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/user\/\d+\/score
 
 #dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
-updater.start_webhook(listen="0.0.0.0",
-                      port=int(os.environ.get('PORT', '8443')),
-                      url_path=config.token)
-updater.bot.set_webhook("https://testbot2202.herokuapp.com/" + config.token)
-#updater.start_polling()
+if DEBUG:
+    updater.start_polling()
+else:
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(os.environ.get('PORT', '8443')),
+                          url_path=config.token)
+    updater.bot.set_webhook("https://testbot2202.herokuapp.com/" + config.token)
+
 updater.idle()
 
 
