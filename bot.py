@@ -36,8 +36,6 @@ def parse(url, context, chat_id):
         if re.findall('\d{3}', str(req.get(code + str(i) + '.png')))[0] == '200':
             png_arr.append(str(i))
 
-    context.bot.send_message(chat_id=chat_id, text="I me!")
-
     if len(svg_arr) > len(png_arr):
         for i in svg_arr:
             urllib.request.urlretrieve(code + i + '.svg', path + i + '_img.svg')
@@ -50,8 +48,6 @@ def parse(url, context, chat_id):
             with open(path + i + "_pdf.pdf", "wb") as f:
                 f.write(img2pdf.convert(path + i + '_img.png'))
             pdf_arr.append(path + i + "_pdf.pdf")
-
-    context.bot.send_message(chat_id=chat_id, text="I'!")
 
     merger = PdfFileMerger()
 
