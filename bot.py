@@ -1,4 +1,4 @@
-import config, musescore
+import config
 import os
 from telegram.ext import Updater, CommandHandler, MessageHandler, RegexHandler, Filters
 
@@ -66,7 +66,7 @@ def start(update, context):
 def musescore(update, context):
     url = update.message.text
     context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf")
-    path = musescore.parse(url)
+    path = parse(url)
     context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'), text="Here is your notes")
     
 
