@@ -108,8 +108,8 @@ updater = Updater(token=config.token, use_context=True)
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(MesssageHandler(Filters.regex('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+'), musescore))
-dispatcher.add_handler(MesssageHandler(Filters.regex('^((Musescore)|(PDF)|(MusicXML)|(MIDI)|(MP3))$'), musescore_file))
+dispatcher.add_handler(MessageHandler(Filters.regex('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+'), musescore))
+dispatcher.add_handler(MessageHandler(Filters.regex('^((Musescore)|(PDF)|(MusicXML)|(MIDI)|(MP3))$'), musescore_file))
 
 #dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
