@@ -1,6 +1,7 @@
 import config
 import os
-from telegram.ext import Updater, CommandHandler, MessageHandler, RegexHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup
 
 import requests as req
 import os, shutil, re
@@ -18,7 +19,7 @@ def cut_string(s, start, end):
 	return ''.join(list(s)[start:end])
 
 
-def parse(url, context, chat_id):
+def parse(url):
     path = 'musicscore_tmp_img_src/'
     svg_arr = []
     png_arr = []
@@ -68,27 +69,47 @@ def start(update, context):
 
 
 def musescore(update, context):
-    url = update.message.text
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Start creating pdf. Wait a minute.")
+    url = re.findall('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', update.message.text)[0]
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Select the format you want to download.", replay_markup=markup)
 
-    path = parse(url, context, update.effective_chat.id)
-
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your notes" + u'\U0001F3BC' + '.')
-    context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
-
-    if os.path.exists(path):
-        os.remove(path)
+    first_get = req.get(url)
+    code = re.findall('https:\/\/musescore.com\/static\/musescore\/scoredata\/gen\/\d\/\d\/\d\/\d+\/\S{40}\/score_',
+                        str(first_get.content))[0]
+    name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
+                  cut_string(re.findall(r'title\" content=\".+\">\\n<meta property=\"og:url\"', str(first_get.content))[0], 16, -27))
     
+    database[update.effective_chat.id] = (url, {
+                                                'Musescore': ('', name + '.mscz'),
+                                                'PDF': ('', name + '.pdf'),
+                                                'MusicXML': (cut_string(code, 0, -1) + '.mxl', name + '.mxl'),
+                                                'MIDI': (cut_string(code, 0, -1) + '.mid', name + '.mid'),
+                                                'MP3': ('https://nocdn.' + cut_string(code, 8, -1) + '.mp3', name + '.mp3')
+                                                })
+        
 
-def echo(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+def musescore_file(update, context):
+    path = database[update.effective_chat.id][1][update.message.text][1]
+    if database[update.effective_chat.id][1][update.message.text][0] != '':
+        urllib.request.urlretrieve(database[update.effective_chat.id][1][update.message.text][0], path)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file" + u'\U0001F3BC' + '.')
+        context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
 
+        if os.path.exists(path):
+            os.remove(path)
+
+
+database = {}
+buttons = ['Musescore', 'PDF', 'MusicXML', 'MIDI', 'MP3']
+
+markup_small = ReplyKeyboardMarkup(list(map(lambda b: [b], buttons[1:])), one_time_keyboard=True, resize_keyboard=True)
+markup = ReplyKeyboardMarkup(list(map(lambda b: [b], buttons)), one_time_keyboard=True, resize_keyboard=True)
 
 updater = Updater(token=config.token, use_context=True)
 
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler('start', start))
-dispatcher.add_handler(RegexHandler('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', musescore))
+dispatcher.add_handler(MesssageHandler(Filters.regex('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+'), musescore))
+dispatcher.add_handler(MesssageHandler(Filters.regex('^((Musescore)|(PDF)|(MusicXML)|(MIDI)|(MP3))$'), musescore_file))
 
 #dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 
@@ -101,21 +122,3 @@ else:
     updater.bot.set_webhook("https://testbot2202.herokuapp.com/" + config.token)
 
 updater.idle()
-
-
-
-#import telebot
-
-#bot = telebot.TeleBot(config.token)
-
-#@bot.message_handler(commands=['start'])
-#def start_message(message):
-#    bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
-    
-#@bot.message_handler(content_types=["text"])
-#def repeat_all_messages(message):
-#    bot.send_message(message.chat.id, message.text)
-
-#if __name__ == '__main__':
-#    bot.remove_webhook()
-#    bot.polling()
