@@ -70,7 +70,7 @@ def start(update, context):
 
 def musescore(update, context):
     global database
-    url = re.findall('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', update.message.text)[0]
+    url = re.match('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', update.message.text).group()
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select the format you want to download.", replay_markup=markup)
 
     first_get = req.get(url)
