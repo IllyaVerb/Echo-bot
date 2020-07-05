@@ -71,7 +71,9 @@ def start(update, context):
 def musescore(update, context):
     global database
     url = re.match('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', update.message.text).group()
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Select the format you want to download.", replay_markup=markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Select the format you want to download.",
+                             replay_markup=ReplyKeyboardMarkup([['Musescore'], ['PDF'], ['MusicXML'], ['MIDI'], ['MP3']],
+                                                               one_time_keyboard=True, resize_keyboard=True))
 
     first_get = req.get(url)
     code = re.findall('https:\/\/musescore.com\/static\/musescore\/scoredata\/gen\/\d\/\d\/\d\/\d+\/\S{40}\/score_',
@@ -101,10 +103,6 @@ def musescore_file(update, context):
 
 
 database = {}
-buttons = ['Musescore', 'PDF', 'MusicXML', 'MIDI', 'MP3']
-
-markup_small = ReplyKeyboardMarkup(list(map(lambda b: [b], buttons[1:])), one_time_keyboard=True, resize_keyboard=True)
-markup = ReplyKeyboardMarkup(list(map(lambda b: [b], buttons)), one_time_keyboard=True, resize_keyboard=True)
 
 updater = Updater(token=config.token, use_context=True)
 
