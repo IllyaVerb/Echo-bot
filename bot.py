@@ -69,6 +69,7 @@ def start(update, context):
 
 
 def musescore(update, context):
+    global database
     url = re.findall('https?:\/\/musescore\.com\/((\w+)|(user\/\d+))\/scores\/\d+', update.message.text)[0]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select the format you want to download.", replay_markup=markup)
 
@@ -88,6 +89,7 @@ def musescore(update, context):
         
 
 def musescore_file(update, context):
+    global database
     path = database[update.effective_chat.id][1][update.message.text][1]
     if database[update.effective_chat.id][1][update.message.text][0] != '':
         urllib.request.urlretrieve(database[update.effective_chat.id][1][update.message.text][0], path)
