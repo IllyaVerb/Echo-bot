@@ -1,10 +1,9 @@
 import config
-import os
+import os, shutil, re
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 import requests as req
-import os, shutil, re
 import urllib.request
 
 from svglib.svglib import svg2rlg
@@ -102,7 +101,7 @@ def musescore(update, context):
 
     mscz_link = req.get(links['mscz'], headers=payload).url
     pdf_link= req.get(links['pdf'], headers=payload).url
-    
+
     database[update.effective_chat.id] = (url, {
                                                 'Musescore': (mscz_link if len(re.findall('signin|forbidden', mscz_link)) == 0 else '', name + '.mscz'),
                                                 '\U0001F4D6PDF': (pdf_link if len(re.findall('signin|forbidden', pdf_link)) == 0 else '', name + '.pdf'),
