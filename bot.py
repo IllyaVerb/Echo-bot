@@ -159,10 +159,10 @@ def opus_to_mp3(url, num, name):
 
 
 def start(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hi, I'm a bot and my name is Aia!\n" +
-                             "I can get notes, music, or other file types, from 'musescore.com' or from 'songsterr.com'." +
-                             "Just send me link on it. And select what you want\n" +
-                             "Have a nice day!", reply_markup=ReplyKeyboardRemove())
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hi, I'm a bot musician, Aia!\n" +
+                             "I am able to get notes/music/other files from sites: 'musescore.com' and 'songsterr.com'.\n" +
+                             "You only need to send a link to the desired song and choose what is required.\n" +
+                             "Have a good day!\U00001F609", reply_markup=ReplyKeyboardRemove())
 
 
 def musescore(update, context):
