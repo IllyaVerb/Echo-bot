@@ -143,23 +143,6 @@ def parse_sgstr(url):
 def opus_to_mp3(url, num, name):
     opus_id = ''.join([rand.choice(list('0123456789abcdef')) for i in range(12)])
     files = {
-        'name': (None, 'text'),
-        'id': (None, opus_id),
-        'key': (None, opus_id+'/'+str(num)+'.opus'),
-        'conversion_type': (None, 'opus-mp3'),
-        'fileName': (None, str(num)+'.opus'),
-        'ext': (None, 'opus'),
-        'fileSize': (None, '3.463682174682617'), 
-        'type': (None, 'audio'), 
-        'target': (None, 'mp3'), 
-        'targetName': (None, 'mp3'), 
-        'options': (None, '{"audio_bitrate":"192k","audio_sample_rate":"Auto","audio_channel":"No change","cut_start":"00:00:00","cut_end":"00:00:00"}'), 
-        'gtoken': (None, 'undefined'), 
-        'url': (None, url), 
-        'jobId': (None, '5f061dfdde37111dbfcc4592'), 
-        'website': (None, 'www.freeconvert.com')
-    }
-    files2 = {
         'file': (None, url), 
         'filelocation': (None, 'online'), 
         'target': (None, 'MP3'), 
@@ -168,11 +151,8 @@ def opus_to_mp3(url, num, name):
         'channel': (None, '0'),
         'type_converter': (None, 'audio')
     }
-    #opus_post = req.post('https://server21.freeconvert.com/api/convert?cid=' + opus_id, files=files)
-    opus_post = req.post('https://s1.fconvert.com/fconvert.php', files=files2).text
+    opus_post = req.post('https://s1.fconvert.com/fconvert.php', files=files).text
     file_id = re.findall(r'\"id\":\"(\w+)\"', opus_post)[0]
-    #opus_get = req.get(opus_post)
-    #dowlnloading = req.get('https://hostveryfast.onlineconverter.com/file/{}'.format(file_id))
     
     urllib.request.urlretrieve('https://s1.fconvert.com/upload/{}/'.format(file_id), name)
     return name
@@ -180,7 +160,8 @@ def opus_to_mp3(url, num, name):
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hi, I'm a bot and my name is Aia!\n" +
-                             "I can get notes, music, or other file types, from 'musescore.com'. Just send me link on it.\n" +
+                             "I can get notes, music, or other file types, from 'musescore.com' or from 'songsterr.com'." +
+                             "Just send me link on it. And select what you want\n" +
                              "Have a nice day!", reply_markup=ReplyKeyboardRemove())
 
 
@@ -242,6 +223,7 @@ def musescore_file(update, context):
 
     if database.get(update.effective_chat.id) != None:
         path = database[update.effective_chat.id][1][update.message.text][1]
+        
         if database[update.effective_chat.id][1][update.message.text][0] != '':
             context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
             urllib.request.urlretrieve(database[update.effective_chat.id][1][update.message.text][0], path)
@@ -312,13 +294,17 @@ def songsterr_file(update, context):
     global database
 
     if database.get(update.effective_chat.id) != None:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
+        if update.message.text == '\U0001F519Back':
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
         url = re.sub('t\d{1,2}$', 't'+database[update.effective_chat.id][3], database[update.effective_chat.id][0])
 
         if update.message.text == '\U0001F4D6PDF':
             path = parse_sgstr(url)
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
+            
+            if os.path.exists(path):
+                os.remove(path)
 
         elif update.message.text == '\U0001F399Slolo MP3' or update.message.text == '\U0001F3A7MP3':
             main_page = req.get(url).text
@@ -338,6 +324,9 @@ def songsterr_file(update, context):
             
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
+            
+            if os.path.exists(path):
+                os.remove(path)
 
         else:
             context.bot.send_message(chat_id=update.effective_chat.id, text="Select what you want to download.",
