@@ -142,9 +142,9 @@ def parse_sgstr(url):
     pdf_filename = re.findall('\"filename\":\"(\w+\.pdf)\"', get_file_back.text)[0]
 
     urllib.request.urlretrieve('https://deftpdf.com/storage/uploads/html-to-pdf/{}/{}'.format(uuid, pdf_filename), html_name + '.pdf')
-    #shutil.rmtree(path)
+    shutil.rmtree(path)
 
-    return (html_name + '.pdf', path + html_name + '.html')
+    return html_name + '.pdf'
 
 
 def opus_to_mp3(url, num, name):
@@ -308,11 +308,10 @@ def songsterr_file(update, context):
         if update.message.text == '\U0001F4D6PDF':
             path = parse_sgstr(url)
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
-            context.bot.send_document(chat_id=update.effective_chat.id, document=open(path[0], 'rb'))
-            context.bot.send_document(chat_id=update.effective_chat.id, document=open(path[1], 'rb'))
+            context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
             
-            if os.path.exists(path[0]):
-                os.remove(path[0])
+            if os.path.exists(path):
+                os.remove(path)
 
         elif update.message.text == '\U0001F399Slolo MP3' or update.message.text == '\U0001F3A7MP3':
             main_page = req.get(url).text
