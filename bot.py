@@ -277,7 +277,8 @@ def songsterr(update, context):
                                                                     re.sub('\)', '\\\)',
                                                                     re.sub('\-', '\\\-', i)))+')'
                                                                 for i in dict_instrument.keys()]) + ')$'), songsterr_instrument)
-    sgstr_handler = MessageHandler(Filters.regex('^((\U0001F4D6PDF)|(\U0001F399Slolo MP3)|(\U0001F3A7MP3)|(\U0001F519Back))$'), songsterr_file)
+    sgstr_handler = MessageHandler(Filters.regex('^((\U0001F4D6PDF)|(\U0001F399Slolo MP3)|(\U0001F3A7MP3)|(\U0001F507Muted MP3)|(\U0001F519Back))$'),
+                                   songsterr_file)
     
     if database.get(update.effective_chat.id) != None:
         for i in database[update.effective_chat.id][1]:
@@ -294,7 +295,9 @@ def songsterr_instrument(update, context):
 
     database[update.effective_chat.id][3] = database[update.effective_chat.id][2][update.message.text]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select what you want to download.",
-                             reply_markup=ReplyKeyboardMarkup([['\U0001F4D6PDF', '\U0001F399Slolo MP3'], ['\U0001F3A7MP3', '\U0001F519Back']],
+                             reply_markup=ReplyKeyboardMarkup([['\U0001F4D6PDF', '\U0001F399Slolo MP3'],
+                                                               ['\U0001F3A7MP3', '\U0001F507Muted MP3'],
+                                                               ['\U0001F519Back']],
                                                               one_time_keyboard=True, resize_keyboard=True))
 
 def songsterr_file(update, context):
@@ -313,7 +316,7 @@ def songsterr_file(update, context):
             if os.path.exists(path):
                 os.remove(path)
 
-        elif update.message.text == '\U0001F399Slolo MP3' or update.message.text == '\U0001F3A7MP3':
+        elif update.message.text in ['\U0001F399Slolo MP3', '\U0001F507Muted MP3', '\U0001F3A7MP3']:
             main_page = req.get(url).text
             html_name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
                                re.findall('<span aria-label=\"title\">(.+)<\/span><span aria-label=\"tab type', main_page)[0])
@@ -322,12 +325,17 @@ def songsterr_file(update, context):
             revisionId = re.findall('\"revisionId\":(\d+)', main_page)[0]
             uuid = re.findall('\"audio\":\"([\w-]+)\"', main_page)[0]
             speed = re.findall('\"speed\":(\d+)', main_page)[0]
-            song_type = 'f' if update.message.text == '\U0001F3A7MP3' else 's'
+            song_type = 'f'
+            if update.message.text == '\U0001F507Muted MP3':
+                song_type = 'm'
+            elif update.message.text == '\U0001F399Slolo MP3':
+                song_type = 's'
             
             opus_url = 'https://audio2.songsterr.com/{}/{}/{}/{}/{}/{}.opus'.format(song_id, revisionId, uuid, speed, song_type,
                                                                                     database[update.effective_chat.id][3])
             path = opus_to_mp3(opus_url, database[update.effective_chat.id][3],
-                        html_name + ('_solo' if update.message.text == '\U0001F399Slolo MP3' else '') + '.mp3')
+                        html_name + ('_solo' if update.message.text == '\U0001F399Slolo MP3' else '') +
+                                      ('_mute' if update.message.text == '\U0001F507Muted MP3' else '') + '.mp3')
             
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
