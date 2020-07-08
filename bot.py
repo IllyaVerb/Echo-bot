@@ -83,7 +83,7 @@ def parse_sgstr(url):
     get_css = re.sub('@media print', '@media nottt', get_css)
     get_css = re.sub('@media screen', '@media all', get_css)
 
-    for i, j in [('<div id=\"showroom\" .+\"Get Plus\" \/><\/a><\/div><\/div>', ''),
+    for i, j in [('<section><div id=\"showroom\" .+\"Get Plus\" \/><\/a><\/div><\/div><\/section>', ''),
                  ('<div id=\"floating-controls-wrapper\" .+<\/div><\/aside><\/div><\/div>', ''), 
                  ('<footer class=.+<\/a><\/div><\/footer>', ''),
                  ('<button id=\"favorite-toggle\".+<\/path><\/svg><\/button><\/div><h1', '</div><h1'),
