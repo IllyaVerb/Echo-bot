@@ -95,9 +95,15 @@ def parse_sgstr(url):
                  ('<link rel="manifest" href="\/sta.+>', ''), 
                  ('>\s-\s<', '> - <'),
                  ('true\n<\/body>', '</body>'), 
-                 ('<link.+type="text\/css">', ''), 
+                 ('<link.+type="text\/css">', ''),
                  ('<\/head>', '<style>' + get_css + '</style></head>')]:
         page = re.sub(i, j, page)
+
+    if len(re.findall('<section class=\"\w+\"><div class=\"\w+\">We use cookies.+<\/div><\/div><\/section>', page)) > 0:
+        page = re.sub('<section class=\"\w+\"><div class=\"\w+\">We use cookies.+<\/div><\/div><\/section>', '', page)
+
+    cracked = re.findall('(:0}\.\w+:before{content:\").+(\";display:inline})', page)
+    page = re.sub(':0}\.\w+:before{content:\".+\";display:inline}', cracked[0][0]+' - '+cracked[0][1], page)
 
     html_name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
                        re.findall('<span aria-label=\"title\">(.+)<\/span><span aria-label=\"tab type', page)[0])
