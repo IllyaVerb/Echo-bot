@@ -84,6 +84,7 @@ def parse_sgstr(url):
     get_css = re.sub('@media screen', '@media all', get_css)
 
     for i, j in [('<section><div id=\"showroom\" .+\"Get Plus\" \/><\/a><\/div><\/div><\/section>', ''),
+                 ('<section><div id=\"showroom\".+<\/div><\/div><\/section>', ''), 
                  ('<div id=\"floating-controls-wrapper\" .+<\/div><\/aside><\/div><\/div>', ''), 
                  ('<footer class=.+<\/a><\/div><\/footer>', ''),
                  ('<button id=\"favorite-toggle\".+<\/path><\/svg><\/button><\/div><h1', '</div><h1'),
@@ -300,7 +301,7 @@ def songsterr_file(update, context):
     global database
 
     if database.get(update.effective_chat.id) != None:
-        if update.message.text == '\U0001F519Back':
+        if update.message.text != '\U0001F519Back':
             context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
         url = re.sub('t\d{1,2}$', 't'+database[update.effective_chat.id][3], database[update.effective_chat.id][0])
 
@@ -336,8 +337,8 @@ def songsterr_file(update, context):
                 os.remove(path)
 
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Select what you want to download.",
-                             reply_markup=ReplyKeyboardMarkup([['\U0001F4D6PDF', '\U0001F399Slolo MP3'], ['\U0001F3A7MP3', '\U0001F519Back']],
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Select preffered instrument.",
+                             reply_markup=ReplyKeyboardMarkup([[i] for i in database[update.effective_chat.id][2].keys()],
                                                               one_time_keyboard=True, resize_keyboard=True))
             
     else:
