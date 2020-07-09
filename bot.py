@@ -210,30 +210,31 @@ def musescore(update, context):
     ms_handler = MessageHandler(Filters.regex('^((Musescore)|(\U0001F4D6PDF)|(MusicXML)|(\U0001F3B9MIDI)|(\U0001F3A7MP3))$'), musescore_file)
     
     if database.get(update.effective_chat.id) != None:
-        dispatcher.remove_handler(database[update.effective_chat.id][1])
+        for i in database[update.effective_chat.id][1]:
+            dispatcher.remove_handler(i)
     dispatcher.add_handler(ms_handler)
 
     mscz_link = req.get(links['mscz'], headers=payload).url
     pdf_link= req.get(links['pdf'], headers=payload).url
 
-    database[update.effective_chat.id] = [url, (ms_handler), {
+    database[update.effective_chat.id] = [url, (ms_handler, None), {
                                                 'Musescore': (mscz_link if len(re.findall('signin|forbidden', mscz_link)) == 0 else '', name + '.mscz'),
                                                 '\U0001F4D6PDF': (pdf_link if len(re.findall('signin|forbidden', pdf_link)) == 0 else '', name + '.pdf'),
                                                 'MusicXML': (cut_string(code, 0, -1) + '.mxl', name + '.mxl'),
                                                 '\U0001F3B9MIDI': (cut_string(code, 0, -1) + '.mid', name + '.mid'),
                                                 '\U0001F3A7MP3': ('https://nocdn.' + cut_string(code, 8, -1) + '.mp3', name + '.mp3')
     }]
-        
 
+    
 def musescore_file(update, context):
     global database
 
     if database.get(update.effective_chat.id) != None:
-        path = database[update.effective_chat.id][1][update.message.text][1]
+        path = database[update.effective_chat.id][2][update.message.text][1]
         
-        if database[update.effective_chat.id][1][update.message.text][0] != '':
+        if database[update.effective_chat.id][2][update.message.text][0] != '':
             context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
-            urllib.request.urlretrieve(database[update.effective_chat.id][1][update.message.text][0], path)
+            urllib.request.urlretrieve(database[update.effective_chat.id][2][update.message.text][0], path)
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
 
