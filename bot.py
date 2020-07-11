@@ -1,19 +1,23 @@
 import config
-import os, shutil, re
+import os, shutil, re, math, ssl, json, time
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 import requests as req
 import urllib.request
 import random as rand
-import math
+import certifi
+from mutagen.mp3 import MP3
 
 from svglib.svglib import svg2rlg
 import img2pdf
 from reportlab.graphics import renderPDF
 from PyPDF2 import PdfFileMerger
 
+
 DEBUG = False
+COUNTING = config.counting
+SILENCE = config.silence
 
 
 def cut_string(s, start, end):
@@ -65,10 +69,11 @@ def parse_ms(url):
     return name + ".pdf"
 
 
-def parse_sgstr(url):
-    def s4():
-        return format(math.floor((rand.random()+1)*65536), 'x')[1:]
+def rand_lett():
+    return format(math.floor((rand.random()+1)*65536), 'x')[1:]
 
+
+def parse_sgstr(url):
     page = req.get(url).text
 
     path = 'songster_src/'
@@ -116,7 +121,11 @@ def parse_sgstr(url):
     get_token = html_to_pdf.get('https://deftpdf.com/html-to-pdf')
 
     token = re.findall('<input type="hidden" id="editor_csrf" value="(\w{40})">', get_token.text)[0]
-    uuid = s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
+    uuid = rand_lett() + rand_lett() + '-' +\
+            rand_lett() + '-' +\
+            rand_lett() + '-' +\
+            rand_lett() + '-' +\
+            rand_lett() + rand_lett() + rand_lett()
 
     files = {
         'file': (path + html_name + '.html', page, 'text/html'),
@@ -148,21 +157,89 @@ def parse_sgstr(url):
 
 
 def opus_to_mp3(url, num, name):
-    opus_id = ''.join([rand.choice(list('0123456789abcdef')) for i in range(12)])
-    files = {
-        'file': (None, url), 
-        'filelocation': (None, 'online'), 
-        'target': (None, 'MP3'), 
-        'bitrate': (None, '128k'),
-        'frequency': (None, '0'), 
-        'channel': (None, '0'),
-        'type_converter': (None, 'audio')
-    }
-    opus_post = req.post('https://s1.fconvert.com/fconvert.php', files=files).text
-    file_id = re.findall(r'\"id\":\"(\w+)\"', opus_post)[0]
+    urllib.request.urlretrieve(url, name[:-4]+'.opus')
+    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}""'\
+              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + name[:-4]+'.opus',
+                      os.path.dirname(os.path.abspath(__file__)) + '\\' + name)
+    os.system(command)
     
-    urllib.request.urlretrieve('https://s1.fconvert.com/upload/{}/'.format(file_id), name)
+    if os.path.exists(name[:-4]+'.opus'):
+        os.remove(name[:-4]+'.opus')
+        
     return name
+
+
+def add_countin(files):
+    txt_file = "file '{}'\nfile '{}'"\
+               .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + files[0],
+                       os.path.dirname(os.path.abspath(__file__)) + '\\' + files[1])
+    with open('concat.txt', 'w') as f:
+        f.write(txt_file)
+        
+    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -f concat -safe 0 -i {} -c copy "{}""'\
+              .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
+                      os.path.dirname(os.path.abspath(__file__)) + '\\' + files[1][:-4]+'_counting.mp3')
+    os.system(command)
+    
+    if os.path.exists('concat.txt'):
+        os.remove('concat.txt')
+    
+    return files[1][:-4]+'_counting.mp3'
+
+
+def repair_mp3(path):
+    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}""'\
+              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
+                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_repair.mp3')
+    os.system(command)
+    if os.path.exists(path):
+        os.remove(path)
+    return path[:-4]+'_repair.mp3'
+
+
+def insert_counting(path):
+    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -i "{}" -af "silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp" "{}""'\
+              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
+                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+    os.system(command)
+
+    audio_main = MP3(path)
+    audio_crop = MP3(path[:-4]+'_cropped.mp3')
+    time_diff = audio_main.info.length - audio_crop.info.length
+    
+    if int(time_diff) > 0:
+        crop_silence_cmd = 'cmd /c "cd ffmpeg/bin & ffmpeg -ss 0 -i {} -t {} -c copy "{}"'\
+                           .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE, int(time_diff),
+                                   os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE[:-4]+'_cropped.mp3')
+        os.system(crop_silence_cmd)
+
+        txt_file = "file '{}'\nfile '{}'\nfile '{}'"\
+                   .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE[:-4]+'_cropped.mp3', 
+                           os.path.dirname(os.path.abspath(__file__)) + '\\' + COUNTING,  
+                           os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+    else:
+        txt_file = "file '{}'\nfile '{}'"\
+                   .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + COUNTING,  
+                           os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+        
+    with open('concat.txt', 'w') as f:
+        f.write(txt_file)
+
+    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -f concat -safe 0 -i {} -c copy "{}""'\
+              .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
+                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_counting.mp3')
+    os.system(command)
+    
+    if os.path.exists('concat.txt'):
+        os.remove('concat.txt')
+    
+    if os.path.exists(SILENCE[:-4]+'_cropped.mp3'):
+        os.remove(SILENCE[:-4]+'_cropped.mp3')
+        
+    if os.path.exists(path[:-4]+'_cropped.mp3'):
+        os.remove(path[:-4]+'_cropped.mp3')
+    
+    return path[:-4]+'_counting.mp3'
 
 
 def start(update, context):
@@ -217,7 +294,7 @@ def musescore(update, context):
     mscz_link = req.get(links['mscz'], headers=payload).url
     pdf_link= req.get(links['pdf'], headers=payload).url
 
-    database[update.effective_chat.id] = [url, (ms_handler, None), {
+    database[update.effective_chat.id] = [url, [ms_handler], {
                                                 'Musescore': (mscz_link if len(re.findall('signin|forbidden', mscz_link)) == 0 else '', name + '.mscz'),
                                                 '\U0001F4D6PDF': (pdf_link if len(re.findall('signin|forbidden', pdf_link)) == 0 else '', name + '.pdf'),
                                                 'MusicXML': (cut_string(code, 0, -1) + '.mxl', name + '.mxl'),
@@ -280,20 +357,24 @@ def songsterr(update, context):
                                                                 for i in dict_instrument.keys()]) + ')$'), songsterr_instrument)
     sgstr_handler = MessageHandler(Filters.regex('^((\U0001F4D6PDF)|(\U0001F399Slolo MP3)|(\U0001F3A7MP3)|(\U0001F507Muted MP3)|(\U0001F519Back))$'),
                                    songsterr_file)
+    props_handler = MessageHandler(Filters.regex('^((Common)|(\U0001F941Counting)|(Metronom)|(\U0001F519Back))$'),
+                                   songsterr_music_props)
     
     if database.get(update.effective_chat.id) != None:
         for i in database[update.effective_chat.id][1]:
             dispatcher.remove_handler(i)
         
-    dispatcher.add_handler(instr_handler)    
-    dispatcher.add_handler(sgstr_handler)
+    dispatcher.add_handler(instr_handler)
 
-    database[update.effective_chat.id] = [url, (instr_handler, sgstr_handler), dict_instrument, None]
+    database[update.effective_chat.id] = [url, [instr_handler, sgstr_handler, props_handler], dict_instrument, None, None]
 
 
 def songsterr_instrument(update, context):
     global database
 
+    dispatcher.remove_handler(database[update.effective_chat.id][1][0])
+    dispatcher.add_handler(database[update.effective_chat.id][1][1])
+    
     database[update.effective_chat.id][3] = database[update.effective_chat.id][2][update.message.text]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select what you want to download.",
                              reply_markup=ReplyKeyboardMarkup([['\U0001F4D6PDF', '\U0001F399Slolo MP3'],
@@ -305,7 +386,7 @@ def songsterr_file(update, context):
     global database
 
     if database.get(update.effective_chat.id) != None:
-        if update.message.text != '\U0001F519Back':
+        if update.message.text == '\U0001F4D6PDF':
             context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
         url = re.sub('t\d{1,2}$', 't'+database[update.effective_chat.id][3], database[update.effective_chat.id][0])
 
@@ -318,6 +399,37 @@ def songsterr_file(update, context):
                 os.remove(path)
 
         elif update.message.text in ['\U0001F399Slolo MP3', '\U0001F507Muted MP3', '\U0001F3A7MP3']:
+            dispatcher.remove_handler(database[update.effective_chat.id][1][1])
+            dispatcher.add_handler(database[update.effective_chat.id][1][2])
+
+            database[update.effective_chat.id][4] = update.message.text
+
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Select song properties.",
+                             reply_markup=ReplyKeyboardMarkup([['Common', '\U0001F519Back'],
+                                                               ['\U0001F941Counting', 'Metronom']],
+                                                              one_time_keyboard=True, resize_keyboard=True))
+
+        else:
+            dispatcher.remove_handler(database[update.effective_chat.id][1][1])
+            dispatcher.add_handler(database[update.effective_chat.id][1][0])
+            
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Select preffered instrument.",
+                             reply_markup=ReplyKeyboardMarkup([[i] for i in database[update.effective_chat.id][2].keys()],
+                                                              one_time_keyboard=True, resize_keyboard=True))
+            
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Send link first.", reply_markup=ReplyKeyboardRemove())
+
+
+def songsterr_music_props(update, context):
+    global database
+
+    if database.get(update.effective_chat.id) != None:
+        if update.message.text != '\U0001F519Back':
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Wait a minute, your file is being processed.\U000023F3")
+        url = re.sub('t\d{1,2}$', 't'+database[update.effective_chat.id][3], database[update.effective_chat.id][0])
+        
+        if update.message.text == 'Common' or update.message.text == '\U0001F941Counting' or update.message.text == 'Metronom':
             main_page = req.get(url).text
             html_name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
                                re.findall('<span aria-label=\"title\">(.+)<\/span><span aria-label=\"tab type', main_page)[0])
@@ -327,33 +439,49 @@ def songsterr_file(update, context):
             uuid = re.findall('\"audio\":\"([\w-]+)\"', main_page)[0]
             speed = re.findall('\"speed\":(\d+)', main_page)[0]
             song_type = 'f'
-            if update.message.text == '\U0001F507Muted MP3':
+            if database[update.effective_chat.id][4] == '\U0001F507Muted MP3':
                 song_type = 'm'
-            elif update.message.text == '\U0001F399Slolo MP3':
+            elif database[update.effective_chat.id][4] == '\U0001F399Slolo MP3':
                 song_type = 's'
             
             opus_url = 'https://audio2.songsterr.com/{}/{}/{}/{}/{}/{}.opus'.format(song_id, revisionId, uuid, speed, song_type,
                                                                                     database[update.effective_chat.id][3])
             path = opus_to_mp3(opus_url, database[update.effective_chat.id][3],
-                        html_name + ('_solo' if update.message.text == '\U0001F399Slolo MP3' else '') +
-                                      ('_mute' if update.message.text == '\U0001F507Muted MP3' else '') + '.mp3')
+                        html_name + ('_solo' if database[update.effective_chat.id][4] == '\U0001F399Slolo MP3' else '') +
+                                      ('_mute' if database[update.effective_chat.id][4] == '\U0001F507Muted MP3' else '') + '.mp3')
+
+            if update.message.text == '\U0001F941Counting':
+                path_2 = insert_counting(path)#add_countin([COUNTING, path])
+                if os.path.exists(path):
+                    os.remove(path)
+                path = path_2
+
+            elif update.message.text == 'Metronom':
+                context.bot.send_message(chat_id=update.effective_chat.id, text="Now I cannot create it.\U0001F6A7")
             
             context.bot.send_message(chat_id=update.effective_chat.id, text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
-            
+
             if os.path.exists(path):
                 os.remove(path)
 
         else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Select preffered instrument.",
-                             reply_markup=ReplyKeyboardMarkup([[i] for i in database[update.effective_chat.id][2].keys()],
-                                                              one_time_keyboard=True, resize_keyboard=True))
+            dispatcher.remove_handler(database[update.effective_chat.id][1][2])
+            dispatcher.add_handler(database[update.effective_chat.id][1][1])
             
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Select what you want to download.",
+                             reply_markup=ReplyKeyboardMarkup([['\U0001F4D6PDF', '\U0001F399Slolo MP3'],
+                                                               ['\U0001F3A7MP3', '\U0001F507Muted MP3'],
+                                                               ['\U0001F519Back']],
+                                                              one_time_keyboard=True, resize_keyboard=True))
+
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text="Send link first.", reply_markup=ReplyKeyboardRemove())
 
 
 database = {}
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 updater = Updater(token=config.token, use_context=True)
 

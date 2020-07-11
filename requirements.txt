@@ -9,3 +9,4 @@ svglib==1.0.0
 img2pdf==0.3.6
 reportlab==3.5.44
 PyPDF2==1.26.0
+mutagen==1.44.0
