@@ -158,7 +158,7 @@ def parse_sgstr(url):
 
 def opus_to_mp3(url, num, name):
     urllib.request.urlretrieve(url, name[:-4]+'.opus')
-    command = 'cd ffmpeg/bin & ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
+    command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
               .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + name[:-4]+'.opus',
                       os.path.dirname(os.path.abspath(__file__)) + '\\' + name)
     os.system(command)
@@ -176,7 +176,7 @@ def add_countin(files):
     with open('concat.txt', 'w') as f:
         f.write(txt_file)
         
-    command = 'cd ffmpeg/bin & ffmpeg -f concat -safe 0 -i {} -c copy "{}"'\
+    command = 'ffmpeg -f concat -safe 0 -i {} -c copy "{}"'\
               .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
                       os.path.dirname(os.path.abspath(__file__)) + '\\' + files[1][:-4]+'_counting.mp3')
     os.system(command)
@@ -188,7 +188,7 @@ def add_countin(files):
 
 
 def repair_mp3(path):
-    command = 'cd ffmpeg/bin & ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
+    command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
               .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
                       os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_repair.mp3')
     os.system(command)
@@ -198,7 +198,7 @@ def repair_mp3(path):
 
 
 def insert_counting(path):
-    command = 'cd ffmpeg/bin & ffmpeg -i "{}" -af "silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp" "{}"'\
+    command = 'ffmpeg -i "{}" -af "silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp" "{}"'\
               .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
                       os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
     os.system(command)
@@ -208,7 +208,7 @@ def insert_counting(path):
     time_diff = audio_main.info.length - audio_crop.info.length
     
     if int(time_diff) > 0:
-        crop_silence_cmd = 'cmd /c "cd ffmpeg/bin & ffmpeg -ss 0 -i {} -t {} -c copy "{}"'\
+        crop_silence_cmd = 'ffmpeg -ss 0 -i {} -t {} -c copy "{}"'\
                            .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE, int(time_diff),
                                    os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE[:-4]+'_cropped.mp3')
         os.system(crop_silence_cmd)
@@ -225,7 +225,7 @@ def insert_counting(path):
     with open('concat.txt', 'w') as f:
         f.write(txt_file)
 
-    command = 'cmd /c "cd ffmpeg/bin & ffmpeg -f concat -safe 0 -i {} -c copy "{}""'\
+    command = 'ffmpeg -f concat -safe 0 -i {} -c copy "{}"'\
               .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
                       os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_counting.mp3')
     os.system(command)
