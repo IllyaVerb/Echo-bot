@@ -159,8 +159,7 @@ def parse_sgstr(url):
 def opus_to_mp3(url, num, name):
     urllib.request.urlretrieve(url, name[:-4]+'.opus')
     command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
-              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + name[:-4]+'.opus',
-                      os.path.dirname(os.path.abspath(__file__)) + '\\' + name)
+              .format(name[:-4]+'.opus', name)
     os.system(command)
     
     if os.path.exists(name[:-4]+'.opus'):
@@ -170,15 +169,12 @@ def opus_to_mp3(url, num, name):
 
 
 def add_countin(files):
-    txt_file = "file '{}'\nfile '{}'"\
-               .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + files[0],
-                       os.path.dirname(os.path.abspath(__file__)) + '\\' + files[1])
+    txt_file = "file '{}'\nfile '{}'".format(*files)
     with open('concat.txt', 'w') as f:
         f.write(txt_file)
         
-    command = 'ffmpeg -f concat -safe 0 -i {} -c copy "{}"'\
-              .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
-                      os.path.dirname(os.path.abspath(__file__)) + '\\' + files[1][:-4]+'_counting.mp3')
+    command = 'ffmpeg -f concat -safe 0 -i "{}" -c copy "{}"'\
+              .format('concat.txt', files[1][:-4]+'_counting.mp3')
     os.system(command)
     
     if os.path.exists('concat.txt'):
@@ -189,8 +185,7 @@ def add_countin(files):
 
 def repair_mp3(path):
     command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"'\
-              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
-                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_repair.mp3')
+              .format(path, path[:-4]+'_repair.mp3')
     os.system(command)
     if os.path.exists(path):
         os.remove(path)
@@ -199,8 +194,7 @@ def repair_mp3(path):
 
 def insert_counting(path):
     command = 'ffmpeg -i "{}" -af "silenceremove=start_periods=1:start_duration=1:start_threshold=-60dB:detection=peak,aformat=dblp" "{}"'\
-              .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + path,
-                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+              .format(path, path[:-4]+'_cropped.mp3')
     os.system(command)
 
     audio_main = MP3(path)
@@ -208,26 +202,21 @@ def insert_counting(path):
     time_diff = audio_main.info.length - audio_crop.info.length
     
     if int(time_diff) > 0:
-        crop_silence_cmd = 'ffmpeg -ss 0 -i {} -t {} -c copy "{}"'\
-                           .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE, int(time_diff),
-                                   os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE[:-4]+'_cropped.mp3')
+        crop_silence_cmd = 'ffmpeg -ss 0 -i "{}" -t {} -c copy "{}"'\
+                           .format(SILENCE, int(time_diff), SILENCE[:-4]+'_cropped.mp3')
         os.system(crop_silence_cmd)
 
         txt_file = "file '{}'\nfile '{}'\nfile '{}'"\
-                   .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + SILENCE[:-4]+'_cropped.mp3', 
-                           os.path.dirname(os.path.abspath(__file__)) + '\\' + COUNTING,  
-                           os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+                   .format(SILENCE[:-4]+'_cropped.mp3', COUNTING, path[:-4]+'_cropped.mp3')
     else:
         txt_file = "file '{}'\nfile '{}'"\
-                   .format(os.path.dirname(os.path.abspath(__file__)) + '\\' + COUNTING,  
-                           os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_cropped.mp3')
+                   .format(COUNTING, path[:-4]+'_cropped.mp3')
         
     with open('concat.txt', 'w') as f:
         f.write(txt_file)
 
-    command = 'ffmpeg -f concat -safe 0 -i {} -c copy "{}"'\
-              .format(os.path.dirname(os.path.abspath(__file__)) + '\\concat.txt',
-                      os.path.dirname(os.path.abspath(__file__)) + '\\' + path[:-4]+'_counting.mp3')
+    command = 'ffmpeg -f concat -safe 0 -i "{}" -c copy "{}"'\
+              .format(os.path.dirname('concat.txt', os.path.dirname(path[:-4]+'_counting.mp3')
     os.system(command)
     
     if os.path.exists('concat.txt'):
