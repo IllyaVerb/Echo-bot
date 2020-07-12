@@ -216,7 +216,7 @@ def insert_counting(path):
         f.write(txt_file)
 
     command = 'ffmpeg -f concat -safe 0 -i "{}" -c copy "{}"'\
-              .format(os.path.dirname('concat.txt', os.path.dirname(path[:-4]+'_counting.mp3')
+              .format('concat.txt', path[:-4]+'_counting.mp3')
     os.system(command)
     
     if os.path.exists('concat.txt'):
