@@ -160,7 +160,6 @@ def parse_sgstr(url):
 
 
 def opus_to_mp3(url, name):
-    print(url)
     urllib.request.urlretrieve(url, name[:-4] + '.opus')
     command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"' \
         .format(name[:-4] + '.opus', name)
@@ -499,7 +498,6 @@ def songsterr_music_props(update, context):
                                           main_page)[0])
 
             song_id = re.findall('s(\d+)t', url)[0]
-            print(song_id, url)
             revision_id = re.findall('\"revisionId\":(\d+)', main_page)[0]
             uuid = re.findall('\"audio\":\"([\w-]+)\"', main_page)[0]
             speed = re.findall('\"speed\":(\d+)', main_page)[0]
@@ -608,7 +606,7 @@ def search_to_link(update, context):
     global database
 
     song_dict = database[update.effective_chat.id][2][database[update.effective_chat.id][3][update.message.text]]
-    url = 'https://www.songsterr.com/a/wsa/nirvana-smells-like-teen-spirit-tab-s269t1' + song_dict['artist'].lower() +\
+    url = 'https://www.songsterr.com/a/wsa/' + song_dict['artist'].lower() +\
           '-' + re.sub('[(),.\'\-]', '', re.sub(' ', '\-', song_dict['title'].lower())) + '-tab-s' +\
           str(song_dict['songId']) + 't' + str(song_dict['defaultTrack'])
     songsterr(update, context, url=url)
