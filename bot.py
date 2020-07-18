@@ -499,7 +499,7 @@ def songsterr_music_props(update, context):
                                           main_page)[0])
 
             song_id = re.findall('s(\d+)t', url)[0]
-            print(song_id)
+            print(song_id, url)
             revision_id = re.findall('\"revisionId\":(\d+)', main_page)[0]
             uuid = re.findall('\"audio\":\"([\w-]+)\"', main_page)[0]
             speed = re.findall('\"speed\":(\d+)', main_page)[0]
