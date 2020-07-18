@@ -160,6 +160,7 @@ def parse_sgstr(url):
 
 
 def opus_to_mp3(url, name):
+    print(url)
     urllib.request.urlretrieve(url, name[:-4] + '.opus')
     command = 'ffmpeg -i "{}" -vn -ar 48000 -ac 2 -b:a 128k "{}"' \
         .format(name[:-4] + '.opus', name)
@@ -511,9 +512,9 @@ def songsterr_music_props(update, context):
                 .format(song_id, revision_id, uuid, speed, song_type, database[update.effective_chat.id][3])
             path = opus_to_mp3(opus_url,
                                html_name + (
-                                   '_solo' if database[update.effective_chat.id][4] == '\U0001F399Solo MP3' else '') +
-                               ('_mute' if database[update.effective_chat.id][
-                                               4] == '\U0001F507Muted MP3' else '') + '.mp3')
+                                   '_solo' if database[update.effective_chat.id][4] == '\U0001F399Solo MP3' else '')
+                               + ('_mute' if database[update.effective_chat.id][4] == '\U0001F507Muted MP3' else '')
+                               + '.mp3')
 
             if update.message.text == '\U0001F941Counting':
                 path_2 = insert_counting(path)
