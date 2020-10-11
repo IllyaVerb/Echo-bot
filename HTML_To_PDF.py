@@ -10,6 +10,6 @@ class HTML_To_PDF:
         command_to_run = 'chrome --headless --print-to-pdf="{0}\{1}" "{2}"'.format(path_to_file, name_of_file, page_to_open)
         print('launch:'+command_to_run)
 
-        os.popen(command_to_run)
+        os.system(command_to_run)
         time.sleep(3)
         
