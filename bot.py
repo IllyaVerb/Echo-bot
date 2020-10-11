@@ -10,6 +10,9 @@ import requests as req
 import shutil
 import time
 import urllib.request
+
+import HTML_To_PDF
+
 from PyPDF2 import PdfFileMerger
 from mutagen.mp3 import MP3
 from reportlab.graphics import renderPDF
@@ -95,6 +98,7 @@ def parse_sgstr(url):
     for i, j in [('<section><div id=\"showroom\" .+\"Get Plus\" \/><\/a><\/div><\/div><\/section>', ''),
                  ('<section><div id=\"showroom\".+<\/div><\/div><\/section>', ''),
                  ('<div id=\"floating-controls-wrapper\" .+<\/div><\/aside><\/div><\/div>', ''),
+                 ('<aside aria-controls=\"tablature\".+</aside>', ''),
                  ('<footer class=.+<\/a><\/div><\/footer>', ''),
                  ('<button id=\"favorite-toggle\".+<\/path><\/svg><\/button><\/div><h1', '</div><h1'),
                  ('<button id=\"revisions-toggle\".+<\/span><\/a>', '</div>'),
@@ -118,42 +122,13 @@ def parse_sgstr(url):
 
     html_name = re.sub(r'(\\x[0-9a-f]{2})|([\\\/:\*\?\"<>\|])', '',
                        re.findall('<span aria-label=\"title\">(.+)<\/span><span aria-label=\"tab type', page)[0])
+    page = re.sub('<title>.+</title>', '<title>'+html_name+'</title>', page)
+    
     with open(path + html_name + '.html', 'w', encoding='utf-8') as f:
         f.write(page)
 
-    html_to_pdf = req.Session()
-
-    get_token = html_to_pdf.get('https://deftpdf.com/html-to-pdf')
-
-    token = re.findall('<input type="hidden" id="editor_csrf" value="(\w{40})">', get_token.text)[0]
-    uuid = rand_lett() + rand_lett() + '-' + rand_lett() + '-' + rand_lett() + '-' + rand_lett() + '-' \
-        + rand_lett() + rand_lett() + rand_lett()
-
-    files = {
-        'file': (path + html_name + '.html', page, 'text/html'),
-        'UUID': (None, uuid),
-        'path': (None, 'html-to-pdf'),
-        '_token': (None, token),
-        'pdf_password': (None, 'false')
-    }
-    html_to_pdf.post('https://deftpdf.com/tool/upload', files=files)
-
-    payload = {
-        '_token': token,
-        'UUID': uuid,
-        'pageSize': 'a4',
-        'pageMargin': '',
-        'pageMarginUnits': 'px',
-        'pageOrientation': 'portrait',
-        'viewportWidth': '',
-        'pdf_password': 'false'
-    }
-    get_file_back = html_to_pdf.post('https://deftpdf.com/tool/html-to-pdf', data=payload)
-
-    pdf_filename = re.findall('\"filename\":\"(\w+\.pdf)\"', get_file_back.text)[0]
-
-    urllib.request.urlretrieve('https://deftpdf.com/storage/uploads/html-to-pdf/{}/{}'.format(uuid, pdf_filename),
-                               html_name + '.pdf')
+    HTML_To_PDF.HTML_To_PDF(path + html_name + '.html', html_name + '.pdf')
+    
     shutil.rmtree(path)
 
     return html_name + '.pdf'
