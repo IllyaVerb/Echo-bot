@@ -7,7 +7,7 @@ class HTML_To_PDF:
         html_file = os.getcwd() + "/" + input_html  
         page_to_open = "file:///" + html_file
 
-        command_to_run = 'google-chrome --headless --no-sandbox --print-to-pdf-no-header --print-to-pdf="{0}\{1}" "{2}"'.format(path_to_file, name_of_file, page_to_open)
+        command_to_run = '{0} --headless --no-sandbox --print-to-pdf-no-header --print-to-pdf="{1}\{2}" "{3}"'.format(ENV['GOOGLE_CHROME_BIN'], path_to_file, name_of_file, page_to_open)
         print('launch:'+command_to_run)
 
         os.system(command_to_run)
