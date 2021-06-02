@@ -4,7 +4,7 @@ idna==2.7
 requests==2.7.0
 python-telegram-bot==12.8
 six==1.11.0
-urllib3==1.23
+urllib3==1.26.5
 svglib==1.0.0
 img2pdf==0.3.6
 reportlab==3.5.44
