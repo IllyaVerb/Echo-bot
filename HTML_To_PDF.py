@@ -8,6 +8,7 @@ class HTML_To_PDF:
         html_file = path_to_file + "/" + input_html  
         #page_to_open = "file:///" + html_file
 
+        pdfkit.configuration()
         pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf)
         #command_to_run = '{0} \
         #                    --headless \
