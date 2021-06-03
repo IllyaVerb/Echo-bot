@@ -20,7 +20,11 @@ class HTML_To_PDF:
         #    stdout=subprocess.PIPE).communicate()[0].strip()
         #config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
         
-        pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=pdfkit_config)
+        try:
+            pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=pdfkit_config)
+        except OSError as e:
+            if 'Done' not in str(e):
+                raise e
         #command_to_run = '{0} \
         #                    --headless \
         #                    --no-sandbox \
