@@ -1,4 +1,4 @@
-import os, time, subprocess, sys
+import os, time, subprocess, sys, platform
 import pdfkit
 
 class HTML_To_PDF:    
