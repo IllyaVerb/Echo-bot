@@ -92,6 +92,6 @@ def parse_sgstr(url):
 
 	HTML_To_PDF.HTML_To_PDF(path + html_name + '.html', html_name + '.pdf')
 	
-	shutil.rmtree(path)
+	#shutil.rmtree(path)
 
 	return html_name + '.pdf'
