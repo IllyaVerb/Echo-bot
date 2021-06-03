@@ -7,13 +7,20 @@ class HTML_To_PDF:
         #name_of_file = output_pdf
         html_file = path_to_file + "/" + input_html  
         #page_to_open = "file:///" + html_file
-
-        os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable) 
-        WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')], \
-            stdout=subprocess.PIPE).communicate()[0].strip()
-        config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
         
-        pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=config)
+        if platform.system() == ‘Windows’:
+            pdfkit_config = pdfkit.configuration(wkhtmltopdf=os.environ.get(‘WKHTMLTOPDF_PATH’, ‘C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe’))
+        else:
+            WKHTMLTOPDF_CMD = subprocess.Popen([‘which’, os.environ.get(‘WKHTMLTOPDF_PATH’, ‘/app/bin/wkhtmltopdf’)],\
+                stdout=subprocess.PIPE).communicate()[0].strip()
+            pdfkit_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+
+        #os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable) 
+        #WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')], \
+        #    stdout=subprocess.PIPE).communicate()[0].strip()
+        #config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
+        
+        pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=pdfkit_config)
         #command_to_run = '{0} \
         #                    --headless \
         #                    --no-sandbox \
