@@ -366,7 +366,7 @@ def songsterr_file(update, context):
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
-            context.bot.send_document(chat_id=update.effective_chat.id, document=open(path[:-3]+"html", 'rb'))
+            context.bot.send_document(chat_id=update.effective_chat.id, document=open('songster_src/'+path[:-3]+"html", 'rb'))
 
             if os.path.exists(path):
                 os.remove(path)
