@@ -8,7 +8,9 @@ class HTML_To_PDF:
         html_file = path_to_file + "/" + input_html  
         #page_to_open = "file:///" + html_file
 
-        WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')], stdout=subprocess.PIPE).communicate()[0].strip()
+        os.environ['PATH'] += os.pathsep + os.path.dirname(sys.executable) 
+        WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_BINARY', 'wkhtmltopdf')], \
+            stdout=subprocess.PIPE).communicate()[0].strip()
         config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
         
         pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=config)
