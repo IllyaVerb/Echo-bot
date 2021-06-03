@@ -12,7 +12,7 @@ def html_by_selenium():
 	opt = Options()
 	opt.add_argument("--disable-infobars")
 	opt.add_argument("--disable-extensions")
-	opt.add_argument("--headless")
+	#opt.add_argument("--headless")
 	# Pass the argument 1 to allow and 2 to block
 	opt.add_experimental_option("prefs", { 
 		"profile.default_content_setting_values.media_stream_mic": 2, 
@@ -37,9 +37,11 @@ def go_by_url(driver, url):
 
 def parse_sgstr(url):
 	#page = req.get(url).text
+	print("Selenuim started -- ", end="")
 	driver = html_by_selenium()
 	page = go_by_url(driver, url)
 	browse_quit(driver)
+	print("Selenuim ended")
 
 	path = 'songster_src/'
 	css_path = re.findall('>\s<link href=\"\/(static.+)(\w{16}\.css)\"', page)
@@ -90,7 +92,9 @@ def parse_sgstr(url):
 	with open(path + html_name + '.html', 'w', encoding='utf-8') as f:
 		f.write(page)
 
+	print("PDFKIT started -- ", end="")
 	HTML_To_PDF.HTML_To_PDF(path + html_name + '.html', html_name + '.pdf')
+	print("PDFKIT ended")
 	
 	shutil.rmtree(path)
 
