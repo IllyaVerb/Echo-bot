@@ -9,7 +9,7 @@ class HTML_To_PDF:
         #page_to_open = "file:///" + html_file
         
         if platform.system() == 'Windows':
-            pdfkit_config = pdfkit.configuration(wkhtmltopdf=os.environ.get('WKHTMLTOPDF_PATH', 'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'))
+            pdfkit_config = pdfkit.configuration(wkhtmltopdf=os.environ.get('WKHTMLTOPDF_PATH', r'C:\"Program Files"\wkhtmltopdf\bin\wkhtmltopdf.exe'))
         else:
             WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_PATH', '/app/bin/wkhtmltopdf')],\
                 stdout=subprocess.PIPE).communicate()[0].strip()

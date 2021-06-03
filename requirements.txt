@@ -10,5 +10,5 @@ img2pdf==0.3.6
 reportlab==3.5.44
 PyPDF2==1.26.0
 mutagen==1.44.0
-wkhtmltopdf-pack-ng==0.12.3.0
 pdfkit==0.6.1
+selenium==3.141.0
