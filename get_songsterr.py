@@ -12,7 +12,7 @@ def html_by_selenium():
 	opt = Options()
 	opt.add_argument("--disable-infobars")
 	opt.add_argument("--disable-extensions")
-	#opt.add_argument("--headless")
+	opt.add_argument("--headless")
 	# Pass the argument 1 to allow and 2 to block
 	opt.add_experimental_option("prefs", { 
 		"profile.default_content_setting_values.media_stream_mic": 2, 
@@ -50,10 +50,6 @@ def parse_sgstr(url):
 		os.makedirs(path)
 
 	get_css = req.get('https://www.songsterr.com/' + path_2 + css_name, path + css_name).text
-	get_css = re.sub('content:\"Y[\w\' ]+page\";', '', get_css)
-	get_css = re.sub('{margin:0 \d+px 0 \d+px}@', '{}@', get_css)
-	get_css = re.sub('@media print', '@media nottt', get_css)
-	get_css = re.sub('@media screen', '@media all', get_css)
 
 	for i, j in [('<section><div id=\"showroom\" .+\"Get Plus\" \/><\/a><\/div><\/div><\/section>', ''),
 				 ('<section><div id=\"showroom\".+<\/div><\/div><\/section>', ''),
@@ -73,7 +69,12 @@ def parse_sgstr(url):
 				 ('<link.+type="text\/css">', ''),
 				 ('</svg><div class.+style=\"transform:(.+\n){14}.+</svg></div>', '</svg>'),
 				 ('<section><div.+id=\"showroom\".+</div></section>', ''),
-				 ('<\/head>', '<style>' + get_css + '</style></head>')]:
+				 ('<div class=\"fc-consent-root\"(.*\n*)+$', '</body></html>'),
+				 ('<\/head>', '<style>' + get_css + '</style></head>'),
+				 ('content:\"Y[\w\' ]+page\";', ''),
+				 ('{margin:0 \d+px 0 \d+px}@', '{}@'),
+				 ('@media print', '@media nottt'),
+				 ('@media screen', '@media all')]:
 		page = re.sub(i, j, page)
 
 	if len(re.findall('<section class=\"\w+\"><div class=\"\w+\">We use cookies.+<\/div><\/div><\/section>',
@@ -92,6 +93,6 @@ def parse_sgstr(url):
 
 	HTML_To_PDF.HTML_To_PDF(path + html_name + '.html', html_name + '.pdf')
 	
-	#shutil.rmtree(path)
+	shutil.rmtree(path)
 
 	return html_name + '.pdf'

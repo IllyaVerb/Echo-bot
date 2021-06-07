@@ -1,39 +1,25 @@
-import os, time, subprocess, sys, platform
-import pdfkit
+import os, time, platform
 
-DEBUG = False
+class HTML_To_PDF:	
+	def __init__(self, input_html, output_pdf):
+		path_to_file = os.getcwd()
 
-class HTML_To_PDF:    
-    def __init__(self, input_html, output_pdf):
-        path_to_file = os.getcwd()
-        name_of_file = output_pdf
-        html_file = path_to_file + "/" + input_html  
-        page_to_open = "file:///" + html_file
-        
-        if DEBUG:
-            command_to_run = 'start chrome \
-                                --headless \
-                                --no-sandbox \
-                                --no-first-run \
-                                --disable-gpu \
-                                --print-to-pdf="{}\{}" "{}"'\
-                                .format(path_to_file, name_of_file, page_to_open)
-            print('launch:'+command_to_run)
+		if platform.system() == 'Windows':
+			exec_file = 'start chrome'
+		else:
+			exec_file = os.getenv('GOOGLE_CHROME_BIN', 'google-chrome-stable')
+			
+		command_to_run = '{3} \
+				--headless \
+				--no-sandbox \
+				--no-first-run \
+				--disable-gpu \
+				--print-to-pdf="{0}/{1}" "{0}/{2}"'\
+				.format(path_to_file, output_pdf, input_html, exec_file)
+							
+		print('launch: ' + command_to_run)
 
-            os.system(command_to_run)
-        else:
-            if platform.system() == 'Windows':
-                pdfkit_config = pdfkit.configuration(wkhtmltopdf=os.environ.get('WKHTMLTOPDF_PATH', r'C:\"Program Files"\wkhtmltopdf\bin\wkhtmltopdf.exe'))
-            else:
-                WKHTMLTOPDF_CMD = subprocess.Popen(['which', os.environ.get('WKHTMLTOPDF_PATH', '/app/bin/wkhtmltopdf')],\
-                    stdout=subprocess.PIPE).communicate()[0].strip()
-                pdfkit_config = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
-            
-            try:
-                pdfkit.from_file(html_file,  path_to_file + "/" + output_pdf, configuration=pdfkit_config)
-            except OSError as e:
-                if 'Done' not in str(e):
-                    raise e
+		os.system(command_to_run)
 
-        time.sleep(1)
-        
+		time.sleep(1)
+		

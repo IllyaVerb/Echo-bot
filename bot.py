@@ -1,5 +1,4 @@
 import certifi
-import config
 import img2pdf
 import json
 import math
@@ -11,6 +10,7 @@ import shutil
 import time
 import urllib.request
 
+import config
 import get_songsterr
 
 from PyPDF2 import PdfFileMerger
@@ -366,7 +366,7 @@ def songsterr_file(update, context):
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
-            context.bot.send_document(chat_id=update.effective_chat.id, document=open('songster_src/'+path[:-3]+"html", 'rb'))
+            #context.bot.send_document(chat_id=update.effective_chat.id, document=open("songster_src/" + path[:-3]+"html", 'rb'))
 
             if os.path.exists(path):
                 os.remove(path)
@@ -575,7 +575,7 @@ if DEBUG:
 else:
     updater.start_webhook(listen="0.0.0.0",
                           port=int(os.environ.get('PORT', '8443')),
-                          url_path=config.token)
-    updater.bot.set_webhook("https://testbot2202.herokuapp.com/" + config.token)
+                          url_path=config.token, 
+                          webhook_url="https://testbot2202.herokuapp.com/" + config.token)
 
 updater.idle()
