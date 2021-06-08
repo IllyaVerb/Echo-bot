@@ -14,12 +14,16 @@ class HTML_To_PDF:
 				--no-sandbox \
 				--no-first-run \
 				--disable-gpu \
+				--print-to-pdf-no-header \
 				--print-to-pdf="{0}/{1}" "{0}/{2}"'\
 				.format(path_to_file, output_pdf, input_html, exec_file)
 							
-		print('launch: ' + command_to_run)
+		#print('launch: ' + command_to_run)
 
 		os.system(command_to_run)
 
-		time.sleep(1)
-		
+		counter = 0
+		while counter < 120:
+			if os.path.exists("{}/{}".format(path_to_file, output_pdf)):
+				break
+			time.sleep(0.5)		

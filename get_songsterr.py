@@ -9,19 +9,19 @@ from selenium.common.exceptions import NoSuchElementException
 import HTML_To_PDF
 
 def html_by_selenium():
-	opt = Options()
-	opt.add_argument("--disable-infobars")
-	opt.add_argument("--disable-extensions")
-	opt.add_argument("--headless")
+	#opt = Options()
+	#opt.add_argument("--disable-infobars")
+	#opt.add_argument("--disable-extensions")
+	#opt.add_argument("--headless")
 	# Pass the argument 1 to allow and 2 to block
-	opt.add_experimental_option("prefs", { 
-		"profile.default_content_setting_values.media_stream_mic": 2, 
-		"profile.default_content_setting_values.media_stream_camera": 2,
-		"profile.default_content_setting_values.geolocation": 2, 
-		"profile.default_content_setting_values.notifications": 2 
-	})
-	driver = webdriver.Chrome(chrome_options=opt)
-	driver.implicitly_wait(20)
+	#opt.add_experimental_option("prefs", { 
+		#"profile.default_content_setting_values.media_stream_mic": 2, 
+		#"profile.default_content_setting_values.media_stream_camera": 2,
+		#"profile.default_content_setting_values.geolocation": 2, 
+		#"profile.default_content_setting_values.notifications": 2 
+	#})
+	driver = webdriver.Chrome()#chrome_options=opt)
+	driver.implicitly_wait(60)
 
 	return driver
 
@@ -32,11 +32,26 @@ def browse_quit(driver):
 
 def go_by_url(driver, url):
 	driver.get(url)
-	time.sleep(5)
+	try:
+		driver.find_element_by_xpath("//section[@id='tablature']")
+	except NoSuchElementException:
+		return ""
+
+	last_height = int(driver.execute_script("return document.body.scrollHeight"))
+	curr_height = 0
+	while curr_height < last_height:
+		driver.execute_script("window.scrollTo(0, {});".format(curr_height))
+		time.sleep(0.1)
+		curr_height += 50
+	
+	try:
+		driver.find_element_by_xpath("(//section[@id='tablature']//*[@class='n'])[last()]//*")
+	except NoSuchElementException:
+		return ""
+
 	return driver.page_source
 
 def parse_sgstr(url):
-	#page = req.get(url).text
 	driver = html_by_selenium()
 	page = go_by_url(driver, url)
 	browse_quit(driver)

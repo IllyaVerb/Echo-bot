@@ -363,11 +363,13 @@ def songsterr_file(update, context):
 
         if update.message.text == '\U0001F4D6PDF':
             path = get_songsterr.parse_sgstr(url)
+            #time.sleep(5)
             context.bot.send_message(chat_id=update.effective_chat.id,
                                      text="Thank you for using me.\nHere is your file.\U0001F4CE")
             context.bot.send_document(chat_id=update.effective_chat.id, document=open(path, 'rb'))
             #context.bot.send_document(chat_id=update.effective_chat.id, document=open("songster_src/" + path[:-3]+"html", 'rb'))
 
+            #time.sleep(5)
             if os.path.exists(path):
                 os.remove(path)
 
